@@ -24,9 +24,10 @@
     	<constructor-arg index="0" value="0.0000001"/>
 	</bean>
 	
+	<!-- NOTE: cursewords has to be comma seperated uppercase words -->
 	<alias alias="filteredCustomerReviewService" name="filteredCustomerReviewService"/>
 	<bean id="filteredCustomerReviewService" class="de.hybris.platform.customerreview.impl.ImplFilteredCustomerReviewService" parent="abstractBusinessService" scope="tenant">
-		<property name="customerReviewDao" ref="customerReviewDao"/>
+		<property name="customerReviewService" ref="customerReviewService"/>
 		<property name="zerovalue" ref="zerodouble"/>
 		<property name="cursewords" value="WTF,DAMN,SHIT"></property>
 	</bean>
