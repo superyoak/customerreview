@@ -24,9 +24,9 @@
  
  
  
- public class ImplFilteredCustomerReviewService
+ public class FilteredCustomerReviewServiceTest
    extends ServicelayerTransactionalTest
  {
-	 //Not implemented for now. Should be a necessary step for testing the new FilteredCustomerReviewService
+	 //Todo: Not implemented for now. Should be a necessary step for testing the new FilteredCustomerReviewService
  }
 
