@@ -23,66 +23,75 @@ import org.springframework.beans.factory.annotation.Required;
 
 
 public class ImplFilteredCustomerReviewService
-  	extends DefaultCustomerReviewService
-  	implements FilteredCustomerReviewService
+      extends AbstractBusinessService
+      implements FilteredCustomerReviewService
 {
+  private CustomerReviewService defaultService;
   private String[] cursewords;
   private Double zerovalue;
   
-  @Override
   public CustomerReviewModel createCustomerReview(Double rating, String headline, String comment, UserModel user, ProductModel product)
   {
-	  //Check if rating is less than 0.  Throws if null || < 0
-	  if (rating == null || rating.doubleValue() < 0)
-	  {
-		  throw new JaloInvalidParameterException(Localization.getLocalizedString("error.customerreview.invalidrating", 
-				  new Object[] { (rating == null) ? "null" : rating, 
-					  	     new Double(CustomerReviewConstants.getInstance().MINRATING), 
-					  	     new Double(CustomerReviewConstants.getInstance().MAXRATING) 
-					  	   }), 0);
-	  }
-	  
-	  if(comment != null)
-	  {
-		  //Check if comment contains any of the curse words
-		  String strUpperComment = comment.toUpperCase();
-		  if(Arrays.asList(cursewords).stream().anyMatch(cw -> strUpperComment.contains(cw)))
-		  {
-			  throw new JaloInvalidParameterException(comment + " is not allowed to contain curse words", 0);
-		  }
-	  }
-	  
-	  return super(rating, headline, comment, user, product);
+      //Check if rating is less than 0.  Throws if null || < 0
+      if (rating == null || rating.doubleValue() < 0)
+      {
+          throw new JaloInvalidParameterException(Localization.getLocalizedString("error.customerreview.invalidrating", 
+                  new Object[] { (rating == null) ? "null" : rating, 
+                               new Double(CustomerReviewConstants.getInstance().MINRATING), 
+                               new Double(CustomerReviewConstants.getInstance().MAXRATING) 
+                             }), 0);
+      }
+      
+      if(comment != null)
+      {
+          //Check if comment contains any of the curse words. compare uppercase only
+          String strUpperComment = comment.toUpperCase();
+          if(Arrays.asList(cursewords).stream().anyMatch(cw -> strUpperComment.contains(cw)))
+          {
+              throw new JaloInvalidParameterException(comment + " is not allowed to contain curse words", 0);
+          }
+      }
+      
+      return defaultService.createCustomerReview(rating, headline, comment, user, product);
   }
 
 
   public Integer getNumOfReviewsInRatingRange(ProductModel paramProductModel, Double ratingLow, Double ratingHigh);
   {
-	  if(ratingLow == null) 
-	  {
-		  ratingLow = new Double(CustomerReviewConstants.getInstance().MINRATING);
-	  }
-	  
-	  if(ratingHigh == null)
-	  {
-		  ratingHigh = new Double(CustomerReviewConstants.getInstance().MAXRATING);
-	  }
-	  
-	  if(ratingHigh.doubleValue() < ratingLow.doubleValue())
-	  {
-		  throw new JaloInvalidParameterException("Wrong rating range provided. ratingLow should not be greater than ratingHigh!", 0);
-	  }
+      if(ratingLow == null) 
+      {
+          ratingLow = new Double(CustomerReviewConstants.getInstance().MINRATING);
+      }
+      
+      if(ratingHigh == null)
+      {
+          ratingHigh = new Double(CustomerReviewConstants.getInstance().MAXRATING);
+      }
+      
+      if(ratingHigh.doubleValue() < ratingLow.doubleValue())
+      {
+          throw new JaloInvalidParameterException("Wrong rating range provided. ratingLow should not be greater than ratingHigh!", 0);
+      }
  
-	  //get all reviews
-	  List<CustomerReview> reviews = CustomerReviewManager.getInstance().getAllReviews(
-	    (Product)getModelService().getSource(product));
-	  
-	  //get count within range
-	  return (int)(reviews.stream().filter(cr -> cr.getRating().doubleValue() > max(0, ratingLow.doubleValue() - zerovalue.doubleValue()) &&
-			  									 cr.getRating().doubleValue() < ratingHigh.doubleValue() + zerovalue.doubleValue()).count());
+      //get all reviews
+      List<CustomerReview> reviews = CustomerReviewManager.getInstance().getAllReviews(
+        (Product)getModelService().getSource(product));
+      
+      //get count within range
+      return (int)(reviews.stream().filter(cr -> cr.getRating().doubleValue() > max(0, ratingLow.doubleValue() - zerovalue.doubleValue()) &&
+                                           cr.getRating().doubleValue() < ratingHigh.doubleValue() + zerovalue.doubleValue()).count());
   }
   
+  @Required
+  public void setDefaultservice(CustomerReviewService defaultService)
+  {
+      this.defaultService = defaultService;
+  }
   
+  protected CustomerReviewService getDefaultservice()
+  {
+      return defaultservice;
+  }
 
   @Required
   public void setCursewords(String[] cursewords) {
@@ -95,11 +104,11 @@ public class ImplFilteredCustomerReviewService
   @Required
   public void setZerovalue(Double zerovalue )
   {
-	  this.zerovalue = zerovalue;
+      this.zerovalue = zerovalue;
   }
   
   public Double getZerovalue() {
-	  return zerovalue;
+      return zerovalue;
   }
 }
   
